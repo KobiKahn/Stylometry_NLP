@@ -1,5 +1,5 @@
-# import matplotlib.pyplot as plt
-
+import matplotlib.pyplot as plt
+import math
 
 def open_file(file_name):
     speech_dictionary = {}
@@ -17,10 +17,11 @@ def open_file(file_name):
 
             row = row.split()
 
+
             if len(row) == 0:
                 pass
 
-            elif row[0] == '$' and len(row) != 0:
+            elif row[0] == '$' and len(row) != 1:
 
                 speech_len = 0
                 row_len = len(row) - 1
@@ -55,17 +56,124 @@ def open_file(file_name):
 
             else:
                 speech_len += len(row)
-                print(speech_len)
+                # print(speech_len)
 
             speech_dictionary[date] = [first, middle, last, term, speech_len]
 
-        print(speech_dictionary)
-        return(speech_dictionary)
+        return speech_dictionary
 
 
-speech_dictionary = open_file('Speeches.txt')
+
+# speech_dictionary = open_file('Speeches.txt')
+#
+#
+# print(speech_dictionary)
+
+def plot_data(speech_dictionary):
+
+    year_list = []
+    length_list = []
+
+    for key, value in speech_dictionary.items():
+
+        year_list.append(key)
+        length_list.append(value[-1])
 
 
-print(speech_dictionary)
+        plt.axis([year_list[0], year_list[-1], -100, max(length_list) + 100])
+
+    # print(year_list, length_list)
 
 
+    plt.title('SPEECH VS INAUGURAL YEAR :)')
+
+    plt.plot(year_list, length_list, '-b*')
+
+    plt.show()
+
+    return length_list
+
+
+def calculate_numbers(speech_dictionary, start, end):
+
+    mean = 0
+    variance = 0
+    standard_dev = 0
+    median = 0
+    big = 0
+    small = 0
+
+    number_list = []
+    date_list = []
+
+    if start > end:
+        print('ERROR START DATE IS GREATER THAN END DATE')
+        return
+
+    for key, value in speech_dictionary.items():
+        length = value[-1]
+        if int(key) >= start and int(key) <= end:
+            # print(key, length)
+            number_list.append(length)
+            date_list.append(key)
+    # print(number_list, date_list)
+
+    number_list.sort()
+
+
+    mean = sum(number_list) / len(date_list)
+    # print(mean)
+
+    difference_list = []
+
+    for number in number_list:
+        difference_list.append((number - mean) ** 2)
+
+
+    variance = sum(difference_list) / len(date_list)
+    # print(variance)
+
+    standard_dev = math.sqrt(variance)
+    # print(standard_dev)
+    # print(number_list)
+    if len(number_list) % 2 == 0:
+        middle = int((len(number_list) / 2) - 1)
+        print(middle)
+        median = (number_list[middle] + number_list[middle + 1]) / 2
+
+    else:
+        middle = int((len(number_list) + 1) / 2)
+        median = number_list[middle - 1]
+
+    # print(median)
+
+    minimum = min(number_list)
+    maximum = max(number_list)
+
+    return mean, variance, standard_dev, median, maximum, minimum
+
+
+def gaussian_calculation(number_list, mean, standard_dev, variance):
+    y_list = []
+    for x in number_list:
+
+        y = ( 1/(standard_dev * math.sqrt(2*math.pi)) ) * math.e ** - ( ((x - mean)** 2) / (2 * variance) )
+        y_list.append(y)
+
+    plt.axis([0, max(number_list), min(y_list), max(y_list)])
+
+    plt.plot(number_list, y_list, '-b')
+
+    plt.show()
+
+def main(filename):
+
+    speech_dictionary = open_file(filename)
+
+    number_list = plot_data(speech_dictionary)
+
+    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 2021)
+
+
+    gaussian_calculation(number_list, mean, standard_dev, variance)
+main('Speeches.txt')
