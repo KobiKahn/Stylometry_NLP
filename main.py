@@ -28,7 +28,7 @@ def open_file(file_name):
 
                 first = row[1]
 
-                date = row[-1]
+                date = int(row[-1])
 
 
                 if row_len == 5:
@@ -80,7 +80,7 @@ def plot_data(speech_dictionary):
         length_list.append(value[-1])
 
 
-        plt.axis([year_list[0], year_list[-1], -100, max(length_list) + 100])
+
 
     # print(year_list, length_list)
 
@@ -88,6 +88,8 @@ def plot_data(speech_dictionary):
     plt.title('SPEECH VS INAUGURAL YEAR :)')
 
     plt.plot(year_list, length_list, '-b*')
+
+    plt.axis([year_list[0] - 10, year_list[-1] + 10, 0, max(length_list) + 100])
 
     plt.show()
 
@@ -138,7 +140,7 @@ def calculate_numbers(speech_dictionary, start, end):
     # print(number_list)
     if len(number_list) % 2 == 0:
         middle = int((len(number_list) / 2) - 1)
-        print(middle)
+        # print(middle)
         median = (number_list[middle] + number_list[middle + 1]) / 2
 
     else:
@@ -155,14 +157,23 @@ def calculate_numbers(speech_dictionary, start, end):
 
 def gaussian_calculation(number_list, mean, standard_dev, variance):
     y_list = []
-    for x in number_list:
+    x_list = []
+    x_start = mean - 1.5 * standard_dev
+
+    delta_x = (3 * standard_dev) / 100
+
+    for i in range(100):
+
+        x = i * delta_x + x_start
+
 
         y = ( 1/(standard_dev * math.sqrt(2*math.pi)) ) * math.e ** - ( ((x - mean)** 2) / (2 * variance) )
         y_list.append(y)
+        x_list.append(x)
 
-    plt.axis([0, max(number_list), min(y_list), max(y_list)])
+    plt.axis([mean - (1.5 * standard_dev), mean + (1.5 * standard_dev), min(y_list), max(y_list)])
 
-    plt.plot(number_list, y_list, '-b')
+    plt.plot(x_list, y_list, '-b')
 
     plt.show()
 
@@ -172,8 +183,13 @@ def main(filename):
 
     number_list = plot_data(speech_dictionary)
 
-    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 2021)
+    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 1932)
+    print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
 
+    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1936, 2021)
+    print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
+    # print(median)
 
     gaussian_calculation(number_list, mean, standard_dev, variance)
+
 main('Speeches.txt')
