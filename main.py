@@ -69,7 +69,7 @@ def open_file(file_name):
 #
 # print(speech_dictionary)
 
-def plot_data(speech_dictionary):
+def plot_data(speech_dictionary, mean, standard_dev):
 
     year_list = []
     length_list = []
@@ -79,15 +79,21 @@ def plot_data(speech_dictionary):
         year_list.append(key)
         length_list.append(value[-1])
 
-
-
-
     # print(year_list, length_list)
 
 
     plt.title('SPEECH VS INAUGURAL YEAR :)')
 
     plt.plot(year_list, length_list, '-b*')
+
+
+    plt.plot([year_list[0], year_list[-1]], [mean, mean], '-r')
+
+    plt.plot([year_list[0], year_list[-1]], [mean + standard_dev, mean + standard_dev], '-r')
+
+    plt.plot([year_list[0], year_list[-1]], [mean - standard_dev, mean - standard_dev], '-r')
+
+
 
     plt.axis([year_list[0] - 10, year_list[-1] + 10, 0, max(length_list) + 100])
 
@@ -162,6 +168,8 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
 
     delta_x = (3 * standard_dev) / 100
 
+    number_dictionary = {}
+
     for i in range(100):
 
         x = i * delta_x + x_start
@@ -171,9 +179,22 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
         y_list.append(y)
         x_list.append(x)
 
+        number_dictionary[x] = y
+
+
     plt.axis([mean - (1.5 * standard_dev), mean + (1.5 * standard_dev), min(y_list), max(y_list)])
 
+    apex = max(y_list)
+
     plt.plot(x_list, y_list, '-b')
+
+    plt.plot([mean, mean], [0, apex], '-r')
+
+    plt.plot([mean - standard_dev, mean - standard_dev], [0, apex], '-r')
+
+    plt.plot([mean + standard_dev, mean + standard_dev], [0, apex], '-r')
+
+
 
     plt.show()
 
@@ -181,13 +202,15 @@ def main(filename):
 
     speech_dictionary = open_file(filename)
 
-    number_list = plot_data(speech_dictionary)
-
-    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 1932)
+    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 2021)
     print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
 
-    mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1936, 2021)
-    print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
+    number_list = plot_data(speech_dictionary, mean, standard_dev)
+
+
+    #
+    # mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1936, 2021)
+    # print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
     # print(median)
 
     gaussian_calculation(number_list, mean, standard_dev, variance)
