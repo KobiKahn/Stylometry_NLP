@@ -168,18 +168,30 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
 
     delta_x = (3 * standard_dev) / 100
 
-    number_dictionary = {}
 
+    m_s = mean - standard_dev
+
+    mps = mean + standard_dev
     for i in range(100):
 
         x = i * delta_x + x_start
+
+
 
 
         y = ( 1/(standard_dev * math.sqrt(2*math.pi)) ) * math.e ** - ( ((x - mean)** 2) / (2 * variance) )
         y_list.append(y)
         x_list.append(x)
 
-        number_dictionary[x] = y
+        y_left = (1 / (standard_dev * math.sqrt(2 * math.pi))) * math.e ** - (((m_s - mean) ** 2) / (2 * variance))
+        Left = y_left
+
+        y_right = (1 / (standard_dev * math.sqrt(2 * math.pi))) * math.e ** - (((mps - mean) ** 2) / (2 * variance))
+        Right = y_right
+
+
+
+
 
 
     plt.axis([mean - (1.5 * standard_dev), mean + (1.5 * standard_dev), min(y_list), max(y_list)])
@@ -190,9 +202,9 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
 
     plt.plot([mean, mean], [0, apex], '-r')
 
-    plt.plot([mean - standard_dev, mean - standard_dev], [0, apex], '-r')
+    plt.plot([mean - standard_dev, mean - standard_dev], [0, Left], '-r')
 
-    plt.plot([mean + standard_dev, mean + standard_dev], [0, apex], '-r')
+    plt.plot([mean + standard_dev, mean + standard_dev], [0, Right], '-r')
 
 
 
