@@ -22,7 +22,11 @@ def open_file(file_name):
 
     speech_sentence_dictionary = {}
 
+    speech_complex_dictionary = {}
+
     end_sentence = ['.', '!', '?']
+
+    complex_word_count = 0
 
     with open(file_name) as file:
         for row in file:
@@ -32,6 +36,9 @@ def open_file(file_name):
                 pass
 
             elif row[0] == '$' and len(row) != 1:
+                if speech_len != 0:
+                    speech_complex_dictionary[date] = complex_word_count / speech_len
+                complex_word_count = 0
 
                 speech_sentence_dictionary[date] = sentence_list
                 sentence_list = []
@@ -68,6 +75,17 @@ def open_file(file_name):
                 for word in row:
                     sentence_len += 1
 
+                    word_len = 0
+
+                    for letter in word:
+                        if letter.isalpha():
+                            # print(letter)
+                            word_len += 1
+
+                    if word_len >= 8:
+                        # print(word)
+                        complex_word_count += 1
+
                     if word[-1] in end_sentence:
                         sentence_list.append(sentence_len)
                         sentence_len = 0
@@ -77,7 +95,8 @@ def open_file(file_name):
             speech_dictionary[date] = [first, middle, last, term, speech_len]
 
         # print(speech_sentence_dictionary)
-        return speech_dictionary, speech_sentence_dictionary
+        # print(speech_complex_dictionary)
+        return speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary
 
 
 
@@ -99,9 +118,14 @@ def plot_data(speech_dictionary, mean, standard_dev, option = 1):
             length_list.append(value[-1])
             plt.axis([year_list[0] - 10, year_list[-1] + 10, 0, max(length_list) + 100])
 
-        else:
+        elif option == 2:
             length_list.append(value[0])
             plt.axis([year_list[0] - 10, year_list[-1] + 10, 0, max(length_list) + 5])
+
+        elif option == 3:
+            length_list.append(value)
+            plt.axis([year_list[0] - 10, year_list[-1] + 10, min(length_list) - .02, max(length_list) + .02])
+
 
     # print(year_list, length_list)
 
@@ -111,11 +135,13 @@ def plot_data(speech_dictionary, mean, standard_dev, option = 1):
     plt.plot(year_list, length_list, '-b*')
 
 
-    plt.plot([year_list[0], year_list[-1]], [mean, mean], '-r')
+    if option == 1:
 
-    plt.plot([year_list[0], year_list[-1]], [mean + standard_dev, mean + standard_dev], '-r')
+        plt.plot([year_list[0], year_list[-1]], [mean, mean], '-r')
 
-    plt.plot([year_list[0], year_list[-1]], [mean - standard_dev, mean - standard_dev], '-r')
+        plt.plot([year_list[0], year_list[-1]], [mean + standard_dev, mean + standard_dev], '-r')
+
+        plt.plot([year_list[0], year_list[-1]], [mean - standard_dev, mean - standard_dev], '-r')
 
 
 
@@ -173,7 +199,7 @@ def calculate_word_numbers(dictionary, start, end):
 
             new_word_dictionary[key] = [mean, variance, standard_dev, median, maximum, minimum]
 
-    print(new_word_dictionary)
+    # print(new_word_dictionary)
     plot_data(new_word_dictionary, mean, standard_dev, 2)
     # print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
 
@@ -290,7 +316,9 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
 
 def main(filename):
 
-    speech_dictionary, speech_sentence_dictionary = open_file(filename)
+    speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary = open_file(filename)
+
+
 
     calculate_word_numbers(speech_sentence_dictionary, 1789, 2021)
 
@@ -299,6 +327,8 @@ def main(filename):
 
     mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 2021)
     print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
+
+    plot_data(speech_complex_dictionary, mean, standard_dev, 3)
 
     number_list = plot_data(speech_dictionary, mean, standard_dev)
 
