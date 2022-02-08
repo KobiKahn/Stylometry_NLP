@@ -28,6 +28,12 @@ def open_file(file_name):
 
     complex_word_count = 0
 
+    syllable_count = 0
+
+    speech_syllable_dictionary = {}
+
+    vowels = ['a', 'e', 'i', 'o', 'u']
+
     with open(file_name) as file:
         for row in file:
 
@@ -35,12 +41,17 @@ def open_file(file_name):
             if len(row) == 0:
                 pass
 
-            elif row[0] == '$' and len(row) != 1:
+            elif row[0] == '$' and len(row) > 1:
                 if speech_len != 0:
                     speech_complex_dictionary[date] = complex_word_count / speech_len
+                    speech_syllable_dictionary[date] = [syllable_count]
+                    speech_sentence_dictionary[date] = sentence_list
+
+                syllable_count = 0
+
                 complex_word_count = 0
 
-                speech_sentence_dictionary[date] = sentence_list
+
                 sentence_list = []
 
                 speech_len = 0
@@ -73,14 +84,46 @@ def open_file(file_name):
                 speech_len += len(row)
 
                 for word in row:
+                    letter_count = -1
+                    word = word.lower()
+
                     sentence_len += 1
 
                     word_len = 0
 
                     for letter in word:
+                        letter_count += 1
                         if letter.isalpha():
-                            # print(letter)
                             word_len += 1
+
+                        if letter in vowels:
+                            syllable_count += 1
+
+                        if letter == 'a' and letter != word[-1]:
+                            if word[letter_count + 1] == 'u':
+                                syllable_count -= 1
+
+                        elif letter == 'o' and letter != word[-1]:
+                            if word[letter_count + 1] == 'y':
+                                syllable_count -= 1
+
+                            elif word[letter_count + 1] == 'o':
+                                syllable_count -= 1
+
+                        if letter == 'e' and letter != word[-1] and letter != word[-2]:
+                            if word[letter_count + 1] == 'o' and word[letter_count + 2] == 'u':
+                                syllable_count -= 1
+
+                    if word_len >= 3 and word[-2] == 'l' and word[-1] == 'e':
+                        if word[-3] not in vowels:
+                            syllable_count += 1
+
+                    elif word_len >= 4 and word[-3] == 'l' and word[-2] == 'e' and word[-1] == 's':
+                        if word[-4] not in vowels:
+                            syllable_count += 1
+
+                    if word[-1] == 'e':
+                        syllable_count -= 1
 
                     if word_len >= 8:
                         # print(word)
@@ -96,7 +139,8 @@ def open_file(file_name):
 
         # print(speech_sentence_dictionary)
         # print(speech_complex_dictionary)
-        return speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary
+        print(speech_sentence_dictionary)
+        return speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary, speech_syllable_dictionary
 
 
 
@@ -130,12 +174,13 @@ def plot_data(speech_dictionary, mean, standard_dev, option = 1):
     # print(year_list, length_list)
 
 
-    plt.title('SPEECH VS INAUGURAL YEAR :)')
+
 
     plt.plot(year_list, length_list, '-b*')
 
 
     if option == 1:
+        plt.title('SPEECH VS INAUGURAL YEAR :)')
 
         plt.plot([year_list[0], year_list[-1]], [mean, mean], '-r')
 
@@ -314,11 +359,37 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
 
     plt.show()
 
+
+
+def calculate_grade_level(speech_dictionary, speech_sentence_dictionary, speech_syllable_dictionary):
+
+    y_vals = []
+
+    x_vals = []
+
+
+    for key, item in speech_dictionary.items():
+        tot_words = int(item[-1])
+
+        tot_sentence = (len(speech_sentence_dictionary[key]))
+
+        tot_syllable = speech_syllable_dictionary[key][0]
+
+        x_vals.append(key)
+
+        y = (.39 * (tot_words / tot_sentence)) + (11.8 * (tot_syllable / tot_words)) - 15.59
+
+        y_vals.append(y)
+
+    print(x_vals, y_vals)
+
+
+
 def main(filename):
 
-    speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary = open_file(filename)
+    speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary, speech_syllable_dictionary = open_file(filename)
 
-
+    # print(speech_syllable_dictionary)
 
     calculate_word_numbers(speech_sentence_dictionary, 1789, 2021)
 
@@ -333,7 +404,8 @@ def main(filename):
     number_list = plot_data(speech_dictionary, mean, standard_dev)
 
 
-    #
+    calculate_grade_level(speech_dictionary, speech_sentence_dictionary, speech_syllable_dictionary)
+
     # mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1936, 2021)
     # print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
     # print(median)
