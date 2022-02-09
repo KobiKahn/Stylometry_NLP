@@ -32,20 +32,26 @@ def open_file(file_name):
 
     speech_syllable_dictionary = {}
 
+
+
     vowels = ['a', 'e', 'i', 'o', 'u']
 
     with open(file_name) as file:
+        x = 0
         for row in file:
 
             row = row.split()
             if len(row) == 0:
                 pass
 
-            elif row[0] == '$' and len(row) > 1:
-                if speech_len != 0:
+            elif row[0] == '$':
+
+                x += 1
+                if x != 1:
                     speech_complex_dictionary[date] = complex_word_count / speech_len
-                    speech_syllable_dictionary[date] = [syllable_count]
+                    speech_syllable_dictionary[date] = syllable_count
                     speech_sentence_dictionary[date] = sentence_list
+
 
                 syllable_count = 0
 
@@ -57,9 +63,10 @@ def open_file(file_name):
                 speech_len = 0
                 row_len = len(row) - 1
 
-                first = row[1]
+                if row_len > 1:
+                    first = row[1]
 
-                date = int(row[-1])
+                    date = int(row[-1])
 
                 if row_len == 5:
                     middle = row[2]
@@ -125,6 +132,8 @@ def open_file(file_name):
                     if word[-1] == 'e':
                         syllable_count -= 1
 
+
+
                     if word_len >= 8:
                         # print(word)
                         complex_word_count += 1
@@ -139,7 +148,7 @@ def open_file(file_name):
 
         # print(speech_sentence_dictionary)
         # print(speech_complex_dictionary)
-        print(speech_sentence_dictionary)
+        # print(speech_syllable_dictionary)
         return speech_dictionary, speech_sentence_dictionary, speech_complex_dictionary, speech_syllable_dictionary
 
 
@@ -369,11 +378,12 @@ def calculate_grade_level(speech_dictionary, speech_sentence_dictionary, speech_
 
 
     for key, item in speech_dictionary.items():
-        tot_words = int(item[-1])
+        if int(item[-1]) != 0:
+            tot_words = int(item[-1])
 
         tot_sentence = (len(speech_sentence_dictionary[key]))
 
-        tot_syllable = speech_syllable_dictionary[key][0]
+        tot_syllable = speech_syllable_dictionary[key]
 
         x_vals.append(key)
 
@@ -382,6 +392,8 @@ def calculate_grade_level(speech_dictionary, speech_sentence_dictionary, speech_
         y_vals.append(y)
 
     print(x_vals, y_vals)
+
+    # plt.sublot(3, 1)
 
 
 
