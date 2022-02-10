@@ -372,29 +372,57 @@ def gaussian_calculation(number_list, mean, standard_dev, variance):
 
 def calculate_grade_level(speech_dictionary, speech_sentence_dictionary, speech_syllable_dictionary):
 
-    y_vals = []
+    grade_y_vals = []
+
+    sentence_y_vals = []
+
+    syllable_y_vals = []
 
     x_vals = []
 
 
     for key, item in speech_dictionary.items():
-        if int(item[-1]) != 0:
-            tot_words = int(item[-1])
-
-        tot_sentence = (len(speech_sentence_dictionary[key]))
-
-        tot_syllable = speech_syllable_dictionary[key]
 
         x_vals.append(key)
 
+        if int(item[-1]) != 0:
+            tot_words = int(item[-1])
+
+        tot_syllable = speech_syllable_dictionary[key]
+        tot_sentence = (len(speech_sentence_dictionary[key]))
+
+        sentence_y_vals.append(tot_words / tot_sentence)
+        syllable_y_vals.append(tot_syllable / tot_words)
+
         y = (.39 * (tot_words / tot_sentence)) + (11.8 * (tot_syllable / tot_words)) - 15.59
+        grade_y_vals.append(y)
 
-        y_vals.append(y)
+    # DRAW AVERAGE SENTENCE_LENGTH
+    plt.subplot(3, 1, 1)
+    plt.title('AVERAGE SENTENCE LENGTH versus INAUGURAL YEAR')
+    plt.axis([x_vals[0] - 10, x_vals[-1] + 10, min(sentence_y_vals) - 5, max(sentence_y_vals) + 5])
+    plt.plot(x_vals, sentence_y_vals)
 
-    print(x_vals, y_vals)
+    # DRAW AVERAGE SYLLABLE PER WORD
+    plt.subplot(3, 1, 2)
+    plt.title('AVERAGE SYLLABLES PER WORD versus INAUGURAL YEAR')
+    plt.axis([x_vals[0] - 10, x_vals[-1] + 10, min(syllable_y_vals), max(syllable_y_vals)])
+    plt.plot(x_vals, syllable_y_vals)
 
-    # plt.sublot(3, 1)
+    # DRAW GRADE LEVEL
+    plt.subplot(3, 1, 3)
+    plt.title('Flesch-Kincaid Grade Level versus inaugural year.')
+    plt.axis([x_vals[0] - 10, x_vals[-1] + 10, min(grade_y_vals) - 5, max(grade_y_vals) + 5])
+    plt.plot(x_vals, grade_y_vals, '-*b')
 
+    plt.plot([x_vals[0], x_vals[-1]], [6, 6], '-r')
+    plt.plot([x_vals[0], x_vals[-1]], [9, 9], '-g')
+    plt.plot([x_vals[0], x_vals[-1]], [13, 13], '-p')
+
+    plt.legend(['Grade Level', 'Middle School', 'High School', 'College'], loc='upper right')
+
+
+    plt.show()
 
 
 def main(filename):
@@ -409,7 +437,7 @@ def main(filename):
     # print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
 
     mean, variance, standard_dev, median, maximum, minimum = calculate_numbers(speech_dictionary, 1789, 2021)
-    print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
+    # print(f'mean: {mean}, variance: {variance}, standard_dev: {standard_dev}, median: {median}, maximum: {maximum}, minimum: {minimum}')
 
     plot_data(speech_complex_dictionary, mean, standard_dev, 3)
 
